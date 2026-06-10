@@ -40,6 +40,8 @@ comando_sql = ("""INSERT OR REPLACE INTO tb_pecas (codigo_peca, descricao, valor
                 VALUES (?, ?, ?, ?)
                 """)
 
+cursor.execute("DELETE FROM tb_pecas")
+
 cursor.executemany(comando_sql, dados_para_inserir)
 
 conexao.commit()
