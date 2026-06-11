@@ -1,19 +1,9 @@
 
-import sqlite3
 import json
-from functions.get_code import coletar_peca
+import sqlite3
+from functions.write_pecas import ler_pecas
 
-# CHAMANDO A FUNÇAO RESPONSÁVEL PELA COLETA DAS PEÇAS NO BRUTO DO ARQUIVO TXT
-lista_pecas = coletar_peca()
-
-# GRAVAR TUDO EM UM ARQUIVO JSON PARA FACIL MANIPULAÇÃO
-with open("pecas.json", "w", encoding="UTF-8") as arquivo:
-    json.dump(lista_pecas, arquivo, indent=4, ensure_ascii=False)
-    print(f"O arquivo JSON está pronto para uso!")
-
-# LER AS PECAS DO ARQUIVO JSON, PARA DEPOIS INSERIR NO BANCO
-with open("pecas.json", "r", encoding="UTF-8") as arquivo:
-    pecas_json = json.load(arquivo)
+pecas_json = ler_pecas()
 
 # CONECTANDO AO SQLITE
 conexao = sqlite3.connect("banco.db")
@@ -40,12 +30,16 @@ comando_sql = ("""INSERT OR REPLACE INTO tb_pecas (codigo_peca, descricao, valor
                 VALUES (?, ?, ?, ?)
                 """)
 
-cursor.execute("DELETE FROM tb_pecas")
+try:
+    conexao.execute("BEGIN")
 
-cursor.executemany(comando_sql, dados_para_inserir)
+    cursor.execute("DELETE FROM tb_pecas")
+    cursor.executemany(comando_sql, dados_para_inserir)
 
-conexao.commit()
-conexao.close()
+    conexao.commit()
+except:
+    conexao.rollback()
+    raise
 
 print(f"Sucesso! {len(dados_para_inserir)} peças do arquivo 'pecas.json', foram salvas no banco!")
 

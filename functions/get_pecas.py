@@ -37,3 +37,4 @@ def coletar_peca():
 
     return pecas
 
+
